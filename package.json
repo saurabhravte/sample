@@ -1,0 +1,26 @@
+{
+  "name": "momentum",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:push": "pnpm --filter @momentum/server db:push",
+    "db:migrate:corsair": "pnpm --filter @momentum/server db:migrate:corsair",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "perf": "pnpm --filter @momentum/server perf",
+    "dev:server": "pnpm --filter @momentum/server dev",
+    "dev:client": "pnpm --filter @momentum/client dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "devDependencies": {
+    "prettier": "^3.8.4"
+  }
+}

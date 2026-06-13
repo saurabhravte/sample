@@ -1,0 +1,9 @@
+node_modules
+dist
+.next
+pnpm-lock.yaml
+coverage
+*.md
+.env*
+docker-compose.yml
+apps/web/next-env.d.ts

@@ -1,0 +1,70 @@
+name: Perf budgets
+
+# Catch backend latency regressions before merge: boots the real built API
+# against a throwaway pgvector Postgres and asserts p95 budgets on the hot
+# endpoints (health, session, inbox, tasks, connections). Fails the PR if the
+# backend gets slow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  latency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: momentum
+          POSTGRES_PASSWORD: momentum
+          POSTGRES_DB: momentum_perf
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U momentum"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://momentum:momentum@localhost:5432/momentum_perf
+      SESSION_SECRET: perf-only-session-secret-not-for-prod-1234
+      CORSAIR_KEK: cGVyZi1vbmx5LWtlay1ub3QtZm9yLXByb2QtMTIzNDU2Nzg=
+      NODE_ENV: production
+      API_PORT: "4000"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build API (+ shared)
+        run: pnpm --filter @momentum/shared build && pnpm --filter @momentum/server build
+
+      - name: Push schema
+        run: pnpm --filter @momentum/server db:push
+
+      - name: Start API
+        run: |
+          node server/dist/server.js &
+          echo $! > api.pid
+
+      - name: Run latency budgets
+        run: node server/scripts/perf-check.mjs http://localhost:4000
+
+      - name: Stop API
+        if: always()
+        run: kill "$(cat api.pid)" || true

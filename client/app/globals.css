@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===============================================================
+   ONE token system. Light + dark just swap these CSS variables.
+   The bright --accent is used only on active / selected / focus.
+   The ink-100..950 scale + semantic hues power every feature page.
+   =============================================================== */
+:root {
+  /* warm off-white surfaces — easier on the eyes than pure #fff (Fix #2) */
+  --bg: 252 251 248;
+  --surface: 248 246 242;
+  --surface-2: 242 240 234;
+  --line: 230 227 220;
+  --ink: 26 24 21;
+  --muted: 96 92 86;
+  --faint: 156 150 142;
+  --accent: 99 102 241;
+  /* indigo — the one bright note */
+  --accent-soft: 238 239 255;
+
+  /* neutral active/selected state (Fix #3): black-ish in light mode */
+  --active-bg: 232 229 222;
+  --active-fg: 26 24 21;
+
+  /* ink scale — low = strongest text, high = backgrounds (LIGHT roles) */
+  --ink-100: 12 12 14;
+  --ink-200: 32 32 36;
+  --ink-300: 82 82 90;
+  --ink-400: 120 120 128;
+  --ink-500: 150 150 158;
+  --ink-600: 178 178 184;
+  --ink-700: 222 222 226;
+  --ink-800: 240 240 242;
+  --ink-850: 246 246 248;
+  --ink-900: 250 250 251;
+  --ink-950: 255 255 255;
+
+  /* semantic priority hues (readable on both themes at /15 bg + solid text) */
+  --urgent: 225 29 72;
+  /* rose */
+  --reply: 217 119 6;
+  /* amber */
+  --waiting: 124 58 237;
+  /* violet */
+  --fyi: 5 150 105;
+  /* emerald */
+  --news: 100 116 139;
+  /* slate */
+}
+
+.dark {
+  --bg: 9 9 11;
+  --surface: 18 18 21;
+  --surface-2: 26 26 30;
+  --line: 38 38 44;
+  --ink: 250 250 250;
+  --muted: 161 161 170;
+  --faint: 110 110 120;
+  --accent: 129 132 248;
+  --accent-soft: 30 30 52;
+
+  /* neutral active/selected state (Fix #3): near-white in dark mode */
+  --active-bg: 42 42 48;
+  --active-fg: 250 250 250;
+
+  /* ink scale — DARK roles (original palette) */
+  --ink-100: 245 245 247;
+  --ink-200: 228 228 232;
+  --ink-300: 190 190 198;
+  --ink-400: 150 150 160;
+  --ink-500: 120 120 130;
+  --ink-600: 95 95 105;
+  --ink-700: 60 60 68;
+  --ink-800: 38 38 44;
+  --ink-850: 28 28 33;
+  --ink-900: 18 18 21;
+  --ink-950: 9 9 11;
+
+  --urgent: 251 113 133;
+  --reply: 251 191 36;
+  --waiting: 167 139 250;
+  --fyi: 52 211 153;
+  --news: 148 163 184;
+}
+
+* {
+  border-color: rgb(var(--line));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.18);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--line));
+  border-radius: 999px;
+  border: 2px solid rgb(var(--bg));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--faint));
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__edge-path {
+  stroke: rgb(var(--line));
+}
+
+.react-flow__node {
+  cursor: default;
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgb(var(--line)) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ===============================================================
+   Component layer — the classes the feature pages rely on.
+   All theme-aware via the tokens above.
+   =============================================================== */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-soft;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm text-ink placeholder:text-faint outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/20;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-bg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-medium text-ink transition hover:border-accent/40 hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-urgent/30 bg-urgent/10 px-4 py-2.5 text-sm font-medium text-urgent transition hover:bg-urgent/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+
+  .kbd {
+    @apply inline-flex min-w-[1.4rem] items-center justify-center rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-muted;
+  }
+}

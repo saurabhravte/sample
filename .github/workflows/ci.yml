@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: momentum
+          POSTGRES_PASSWORD: momentum
+          POSTGRES_DB: momentum_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U momentum"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://momentum:momentum@localhost:5432/momentum_test
+      SESSION_SECRET: ci-only-session-secret-not-for-prod
+      CORSAIR_KEK: Y2ktb25seS1rZWstbm90LWZvci1wcm9kLTAwMDA=
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level high || true
+
+      - name: Format check (prettier)
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Push schema to test DB
+        run: pnpm --filter @momentum/server db:push
+
+      - name: Test (tenant isolation runs here)
+        run: pnpm -r test
+
+      - name: Build
+        run: pnpm -r build
