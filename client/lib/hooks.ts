@@ -112,10 +112,8 @@ export function useShortcuts(map: ShortcutMap) {
  * session also drive backend data, verify the Clerk JWT in
  * server/src/modules/auth/auth.middleware.ts (see CHANGES.md).
  */
-import { useAuth } from "@clerk/nextjs";
 
 export function useAuthGate() {
-  const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useAuth();
   const [me, setMe] = useState<MeDto | null>(null);
   const [meChecked, setMeChecked] = useState(false);
 
@@ -131,7 +129,11 @@ export function useAuthGate() {
     };
   }, []);
 
-  const loading = !clerkLoaded || !meChecked;
-  const authed = Boolean(clerkSignedIn) || Boolean(me);
-  return { loading, authed, me, clerkSignedIn: Boolean(clerkSignedIn) };
+  // Auth must match what the API enforces: the Express session cookie.
+  // A Clerk session alone does NOT authenticate /api calls, so we don't treat
+  // it as authed here — otherwise the app lets you in while every request 401s
+  // with "Session expired".
+  const loading = !meChecked;
+  const authed = Boolean(me);
+  return { loading, authed, me, clerkSignedIn: false };
 }

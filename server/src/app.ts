@@ -7,6 +7,7 @@ import { errorHandler } from "./common/middleware/error.middleware";
 import { apiLimiter } from "./common/middleware/rateLimit.middleware";
 import { requireAuth } from "./modules/auth/auth.middleware";
 import { authRouter } from "./modules/auth/auth.routes";
+import { pricingRouter } from "./modules/pricing/pricing.routes";
 import { connectionsRouter } from "./modules/connections/connections.routes";
 import { inboxRouter } from "./modules/inbox/inbox.routes";
 import { calendarRouter } from "./modules/calendar/calendar.routes";
@@ -47,6 +48,7 @@ export function createApp() {
   // Webhooks: raw body + signature auth (NOT session auth), mounted first.
   api.use("/webhooks", webhooksRouter);
   api.use("/auth", authRouter);
+  api.use("/pricing", pricingRouter);
   // Everything below requires a session and is rate-limited per user.
   api.use(requireAuth, apiLimiter);
   api.use("/connections", connectionsRouter);

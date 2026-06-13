@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Logo } from '@/components/brand/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +45,7 @@ export function Navbar() {
       >
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink text-bg">
-            <Sparkles className="h-4 w-4" />
+            <Logo className="h-4 w-auto" />
           </span>
           Momentum
         </Link>

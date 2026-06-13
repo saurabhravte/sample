@@ -16,7 +16,7 @@ export const PRESET_LABELS = [
   { id: "personal", name: "Personal", color: "rgb(236 72 153)" },
   { id: "follow-up", name: "Follow-up", color: "rgb(14 165 233)" },
   { id: "waiting", name: "Waiting", color: "rgb(var(--news))" },
-  { id: "idea", name: "Idea", color: "rgb(168 85 247)" },
+  { id: "idea", name: "Idea", color: "rgb(8 145 178)" },
   { id: "bug", name: "Bug", color: "rgb(239 68 68)" },
   { id: "meeting", name: "Meeting", color: "rgb(20 184 166)" },
   { id: "newsletter", name: "Newsletter", color: "rgb(100 116 139)" },

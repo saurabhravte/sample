@@ -1,14 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 type Cycle = 'monthly' | 'annual';
+type Plan = {
+  name: string;
+  monthly: number;
+  blurb: string;
+  features: string[];
+  cta: string;
+  highlight: boolean;
+};
 
-const PLANS = [
+/** Fallback used if /api/pricing is unreachable (e.g. server down in dev). */
+const FALLBACK_PLANS: Plan[] = [
   {
     name: 'Starter',
     monthly: 0,
@@ -45,6 +54,29 @@ const inr = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
 export function Pricing() {
   const [cycle, setCycle] = useState<Cycle>('annual');
+  const [plans, setPlans] = useState<Plan[]>(FALLBACK_PLANS);
+  const [annualDiscount, setAnnualDiscount] = useState(0.2);
+  const [currency, setCurrency] = useState('₹');
+
+  // Dynamic: pricing comes from the public /api/pricing endpoint.
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/pricing', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((body) => {
+        if (!alive || !body?.success) return;
+        const d = body.data;
+        if (Array.isArray(d.plans)) setPlans(d.plans);
+        if (typeof d.annualDiscount === 'number') setAnnualDiscount(d.annualDiscount);
+        if (typeof d.currency === 'string') setCurrency(d.currency);
+      })
+      .catch(() => {
+        /* keep fallback */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <section id="pricing" className="mx-auto max-w-6xl px-4 py-20">
@@ -84,8 +116,8 @@ export function Pricing() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {PLANS.map((p) => {
-          const price = cycle === 'annual' ? Math.round(p.monthly * 0.8) : p.monthly;
+        {plans.map((p) => {
+          const price = cycle === 'annual' ? Math.round(p.monthly * (1 - annualDiscount)) : p.monthly;
           return (
             <div
               key={p.name}
@@ -105,7 +137,7 @@ export function Pricing() {
               <p className="mt-1 text-sm text-muted">{p.blurb}</p>
 
               <div className="mt-5 flex items-end gap-1">
-                <span className="text-sm text-muted">₹</span>
+                <span className="text-sm text-muted">{currency}</span>
                 <AnimatePresence mode="popLayout">
                   <motion.span
                     key={price}
@@ -122,7 +154,7 @@ export function Pricing() {
               </div>
               {cycle === 'annual' && p.monthly > 0 && (
                 <p className="mt-1 text-xs text-faint">
-                  Billed ₹{inr(price * 12)} yearly
+                  Billed {currency}{inr(price * 12)} yearly
                 </p>
               )}
 
